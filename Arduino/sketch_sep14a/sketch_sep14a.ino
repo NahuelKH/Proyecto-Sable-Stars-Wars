@@ -1,4 +1,4 @@
-s a//Constantes para pines de sensores
+//Constantes para pines de sensores
 #define PIN_SENSOR_LDR_ANALOGICO 3
 #define PIN_SCL_6050_ANALOGICO 5
 #define PIN_SDA_6050_ANALOGICO 4
@@ -12,40 +12,71 @@ s a//Constantes para pines de sensores
 #define PIN_PARLANTE_DIGITAL 9
 #define PIN_VIBRADOR_DIGITAL 2
 
-/**
-* Método que inicializa/configura el arduino.
-*
- */
-void setup() {
-  // put your setup code here, to run once:
+// Supuestamente se necesita esto para haer andar el LED RGB Anodo
+#define COMMON_ANODE
 
+/**
+  Método que inicializa/configura el arduino.
+*/
+void setup() {
+  // Seteo de pines ANALOGICOS
+  pinMode(PIN_SENSOR_LDR_ANALOGICO, INPUT);
+  pinMode(PIN_SCL_6050_ANALOGICO, INPUT);
+  pinMode(PIN_SDA_6050_ANALOGICO, INPUT);
+  
+  // Seteo de pines DIGITALES
+  pinMode(PIN_REED_DIGITAL, INPUT);
+  
+  pinMode(PIN_SCK_TARJETA_SD_DIGITAL, OUTPUT);
+  pinMode(PIN_MISO_TARJETA_SD_DIGITAL, OUTPUT);
+  pinMode(PIN_MOSI_TARJETA_SD_DIGITAL, OUTPUT);
+  pinMode(PIN_CS_TARJETA_SD_DIGITAL, OUTPUT);
+  pinMode(PIN_PARLANTE_DIGITAL, OUTPUT);
+  pinMode(PIN_VIBRADOR_DIGITAL, OUTPUT);
 }
 
 /**
-* Método en el que se programa la funcionalidad
-*
- */
+  Método en el que se programa la funcionalidad
+*/
 void loop() {
 
-    if(hayMovimiento()){
-      sonarSableMovimiento();
-    }
+  if (hayMovimiento()) {
+    sonarSableMovimiento();
+  }
+
+  setColor(0, 0, 255);  // Azul
 
 }
 
 /*
- * método que indicará si el sable de luz produjo un movimiento.
- * @author: Pablo
- */
-boolean hayMovimiento(){
+   método que indicará si el sable de luz produjo un movimiento.
+   @author: Pablo
+*/
+boolean hayMovimiento() {
   return true;
 }
 
 /*
- * método que hara sonar el sable cuando se mueva.
- * @author: Pablo
+   método que hara sonar el sable cuando se mueva.
+   @author: Pablo
+*/
+void sonarSable() {
+
+}
+
+/*
+ * método que setea el color del LED RGB
+ * @author: Martin
  */
-void sonarSable(){
-  
+void setColor(int red, int green, int blue)
+{
+  #ifdef COMMON_ANODE
+    red = 255 - red;
+    green = 255 - green;
+    blue = 255 - blue;
+  #endif
+  analogWrite(/*PIN ROJO*/, red);
+  analogWrite(/*PIN VERDE*/, green);
+  analogWrite(/*PIN AZUL*/, blue);
 }
 
