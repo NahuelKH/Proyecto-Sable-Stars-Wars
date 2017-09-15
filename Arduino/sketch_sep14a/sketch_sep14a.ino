@@ -1,4 +1,4 @@
-//Constantes para pines de sensores
+s a//Constantes para pines de sensores
 #define PIN_SENSOR_LDR_ANALOGICO 3
 #define PIN_SCL_6050_ANALOGICO 5
 #define PIN_SDA_6050_ANALOGICO 4
@@ -35,6 +35,7 @@ void loop() {
 
 /*
  * método que indicará si el sable de luz produjo un movimiento.
+ * @author: Pablo
  */
 boolean hayMovimiento(){
   return true;
@@ -42,6 +43,7 @@ boolean hayMovimiento(){
 
 /*
  * método que hara sonar el sable cuando se mueva.
+ * @author: Pablo
  */
 void sonarSable(){
   
