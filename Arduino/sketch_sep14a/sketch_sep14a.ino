@@ -1,7 +1,16 @@
+#include <Wire.h>
+#include <I2Cdev.h>
+#include <MPU6050.h>
+
+
+MPU6050 mpu;
+int16_t ax, ay, az;
+int16_t gx, gy, gz;
+
 //Constantes para pines de sensores
-#define PIN_SENSOR_LDR_ANALOGICO 3
-#define PIN_SCL_6050_ANALOGICO 5
-#define PIN_SDA_6050_ANALOGICO 4
+#define PIN_SENSOR_LDR_ANALOGICO A3
+#define PIN_SCL_6050_ANALOGICO A5
+#define PIN_SDA_6050_ANALOGICO A4
 #define PIN_REED_DIGITAL 5
 
 //Constantes para pines de Actuadores
@@ -22,15 +31,15 @@
 void setup() {
   // Seteo de pines ANALOGICOS
   //pinMode(PIN_SENSOR_LDR_ANALOGICO, INPUT);
-
+  Wire.begin();
   Serial.begin(9600);
-  
+  mpu.initialize();
   pinMode(PIN_SCL_6050_ANALOGICO, INPUT);
   pinMode(PIN_SDA_6050_ANALOGICO, INPUT);
-  /*
+  Serial.println(mpu.testConnection() ? "Connected" : "Connection failed");
   // Seteo de pines DIGITALES
-  pinMode(PIN_REED_DIGITAL, INPUT);
-  
+ // pinMode(PIN_REED_DIGITAL, INPUT);
+/*  
   pinMode(PIN_SCK_TARJETA_SD_DIGITAL, OUTPUT);
   pinMode(PIN_MISO_TARJETA_SD_DIGITAL, OUTPUT);
   pinMode(PIN_MOSI_TARJETA_SD_DIGITAL, OUTPUT);
@@ -46,9 +55,27 @@ void setup() {
   Método en el que se programa la funcionalidad
 */
 void loop() {
-  Serial.print(analogRead(3));
-  Serial.println();
-  delay(2000);
+
+    mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+   // ax+=-1376;
+   Serial.print(ax);
+   Serial.print(" ");
+   Serial.print(ay);
+   Serial.print(" ");
+   Serial.print(az);
+   Serial.print(" ");
+
+   Serial.print(gx);
+   Serial.print(" ");
+   Serial.print(gy);
+   Serial.print(" ");
+   Serial.print(gz);
+   Serial.println();
+  
+  
+
+  //Serial.println();
+   delay(2000);
  /* if(reed){
     // Luz
     intensidad = sensarLuzExterna();
