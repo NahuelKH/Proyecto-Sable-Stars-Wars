@@ -15,15 +15,19 @@
 // Supuestamente se necesita esto para haer andar el LED RGB Anodo
 #define COMMON_ANODE
 
+#define DEFAULT_COLOR 0
 /**
   Método que inicializa/configura el arduino.
 */
 void setup() {
   // Seteo de pines ANALOGICOS
-  pinMode(PIN_SENSOR_LDR_ANALOGICO, INPUT);
+  //pinMode(PIN_SENSOR_LDR_ANALOGICO, INPUT);
+
+  Serial.begin(9600);
+  
   pinMode(PIN_SCL_6050_ANALOGICO, INPUT);
   pinMode(PIN_SDA_6050_ANALOGICO, INPUT);
-  
+  /*
   // Seteo de pines DIGITALES
   pinMode(PIN_REED_DIGITAL, INPUT);
   
@@ -33,21 +37,37 @@ void setup() {
   pinMode(PIN_CS_TARJETA_SD_DIGITAL, OUTPUT);
   pinMode(PIN_PARLANTE_DIGITAL, OUTPUT);
   pinMode(PIN_VIBRADOR_DIGITAL, OUTPUT);
+
+  setColor(DEFAULT_COLOR, DEFAULT_COLOR, DEFAULT_COLOR);
+  */
 }
 
 /**
   Método en el que se programa la funcionalidad
 */
 void loop() {
+  Serial.print(analogRead(3));
+  Serial.println();
+  delay(2000);
+ /* if(reed){
+    // Luz
+    intensidad = sensarLuzExterna();
+    ajustarIntensidad();
 
+
+    // 
+    
+  }
+  
   if (hayMovimiento()) {
     sonarSableMovimiento();
   }
 
   setColor(0, 0, 255);  // Azul
-
+*/
 }
 
+ 
 /*
    método que indicará si el sable de luz produjo un movimiento.
    @author: Pablo
@@ -68,6 +88,8 @@ void sonarSable() {
  * método que setea el color del LED RGB
  * @author: Martin
  */
+
+ /*
 void setColor(int red, int green, int blue)
 {
   #ifdef COMMON_ANODE
@@ -75,8 +97,7 @@ void setColor(int red, int green, int blue)
     green = 255 - green;
     blue = 255 - blue;
   #endif
-  analogWrite(/*PIN ROJO*/, red);
-  analogWrite(/*PIN VERDE*/, green);
-  analogWrite(/*PIN AZUL*/, blue);
-}
 
+ 
+}
+*/

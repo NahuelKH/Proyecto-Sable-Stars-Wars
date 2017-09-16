@@ -1,0 +1,5 @@
+  analogWrite(/*PIN ROJO*/, red);
+  analogWrite(/*PIN VERDE*/, green);
+  analogWrite(/*PIN AZUL*/, blue);
+
+ 
