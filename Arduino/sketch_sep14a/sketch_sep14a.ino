@@ -18,11 +18,7 @@ int contadorDeTurno=0;
 #define PIN_REED_DIGITAL 5
 
 //Constantes para pines de Actuadores
-#define PIN_SCK_TARJETA_SD_DIGITAL 13
-#define PIN_MISO_TARJETA_SD_DIGITAL 12
-#define PIN_MOSI_TARJETA_SD_DIGITAL 11
 #define PIN_CS_TARJETA_SD_DIGITAL 4
-#define PIN_PARLANTE_DIGITAL 9
 #define PIN_VIBRADOR_DIGITAL 2
 
 // Supuestamente se necesita esto para haer andar el LED RGB Anodo
@@ -48,24 +44,29 @@ void setup() {
   //pinMode(PIN_SENSOR_LDR_ANALOGICO, INPUT);
   Wire.begin();
   Serial.begin(9600);
-  mpu.initialize();
-  pinMode(PIN_SCL_6050_ANALOGICO, INPUT);
-  pinMode(PIN_SDA_6050_ANALOGICO, INPUT);
-  Serial.println(mpu.testConnection() ? "Connected" : "Connection failed");
   // Seteo de pines DIGITALES
   pinMode(PIN_REED_DIGITAL, INPUT);
 /*  
-  pinMode(PIN_SCK_TARJETA_SD_DIGITAL, OUTPUT);
-  pinMode(PIN_MISO_TARJETA_SD_DIGITAL, OUTPUT);
-  pinMode(PIN_MOSI_TARJETA_SD_DIGITAL, OUTPUT);
-  pinMode(PIN_CS_TARJETA_SD_DIGITAL, OUTPUT);
-  pinMode(PIN_PARLANTE_DIGITAL, OUTPUT);
   pinMode(PIN_VIBRADOR_DIGITAL, OUTPUT);
 
   setColor(DEFAULT_COLOR, DEFAULT_COLOR, DEFAULT_COLOR);
   */
   
+  //configuracion sonido
+  SdPlay.setSDCSPin(PIN_CS_TARJETA_SD_DIGITAL);
+  if(!SdPlay.init(SSDA_MODE_FULLRATE | SSDA_MODE_MONO | SSDA_MODE_AUTOWORKER)){
+	Serial.print("Error en el modulo SD");
+  }
+  if(!SdPlay.setFile("music.wav")){
+	Serial.print("No se encontro el archivo de audio");
+  }
+  //fin
+  
   //configuracion mpu
+  mpu.initialize();
+  pinMode(PIN_SCL_6050_ANALOGICO, INPUT);
+  pinMode(PIN_SDA_6050_ANALOGICO, INPUT);
+  Serial.println(mpu.testConnection() ? "Connected" : "Connection failed");
   mpu.setXAccelOffset(-1577);
   mpu.setYAccelOffset(61);
   mpu.setZAccelOffset(1171);
@@ -112,6 +113,7 @@ void sensarMovimiento(){
 	}
 	
 	//calculo la normal de las aceleraciones
+	//aca utilizo un contador para poder guardar el valor del sensado en 2 variables diferentes y asi poder hacer las comparaciones
 	if(contadorDeTurno%2==0){
 		normal=sqrt(pow(ax,2)+pow(ay,2)+pow(az,2));
 	}else{
@@ -126,12 +128,12 @@ void sensarMovimiento(){
 	//para mi hay que usar una logica de contadores(en tiempo) como dijo el profe
 	if(hayMovimiento(abs(normal-normal2))){
 		//reproducir sonido
-   Serial.println("hay movimiento");
+		Serial.println("hay movimiento");
 		attack++;
 		sonarSable();
 	}else{
 		//preparar logica para el neutro
-    Serial.println("*******************************************************neutro");
+		Serial.println("*******************************************************neutro");
 		nonAttack++;
 		sonarSable();
 	}
@@ -156,6 +158,10 @@ bool hayMovimiento(double movimiento) {
    @author: Pablo
 */
 void sonarSable() {
+	SdPlay.play();
+	while(!SdPlay.isStopped())
+	{ ;
+	}
 	if(attack==1){
 		//reproducir sonido 1
 	}else if(attack==2){
@@ -167,6 +173,9 @@ void sonarSable() {
 	if(nonAttack==1){
 		//reproducir sonido neutro
 	}
+	//por ahora asi porque no se implemento nada
+	attack=0;
+	nonAttack=0;
 }
 
 /*
