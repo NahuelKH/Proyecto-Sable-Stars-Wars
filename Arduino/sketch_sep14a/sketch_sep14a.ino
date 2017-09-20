@@ -1,10 +1,12 @@
 #include <Wire.h>
 #include <I2Cdev.h>
 #include <MPU6050.h>
+#include <SimpleSDAudio.h>
 
-#define DEBUGG_MODE 0
+#define DEBUGG_MODE 1
 
 MPU6050 mpu;
+
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
 double normal;
@@ -27,7 +29,7 @@ int contadorDeTurno=0;
 #define DEFAULT_COLOR 0
 
 //umbrales
-#define UMBRAL_ACELEROMETRO 3000
+#define UMBRAL_ACELEROMETRO 2000
 #define UMBRAL_LUZ_AMBIENTAL 100
 #define UMBRAL_LUZ_BRILLO 120
 #define UMBRAL_LUZ_OSCURIDAD 90
@@ -36,6 +38,7 @@ int attack = 0;
 int nonAttack = 0;
 int semAttack = 0;
 int luz=0;
+boolean encendido=true;
 /**
   Método que inicializa/configura el arduino.
 */
@@ -55,10 +58,10 @@ void setup() {
   //configuracion sonido
   SdPlay.setSDCSPin(PIN_CS_TARJETA_SD_DIGITAL);
   if(!SdPlay.init(SSDA_MODE_FULLRATE | SSDA_MODE_MONO | SSDA_MODE_AUTOWORKER)){
-	Serial.print("Error en el modulo SD");
+	  Serial.print("Error en el modulo SD");
   }
-  if(!SdPlay.setFile("music.wav")){
-	Serial.print("No se encontro el archivo de audio");
+  if(!SdPlay.setFile("quieto.wav")){
+  	Serial.print("No se encontro el archivo de audio");
   }
   //fin
   
@@ -67,12 +70,12 @@ void setup() {
   pinMode(PIN_SCL_6050_ANALOGICO, INPUT);
   pinMode(PIN_SDA_6050_ANALOGICO, INPUT);
   Serial.println(mpu.testConnection() ? "Connected" : "Connection failed");
-  mpu.setXAccelOffset(-1577);
-  mpu.setYAccelOffset(61);
-  mpu.setZAccelOffset(1171);
+  mpu.setXAccelOffset(-1537);
+  mpu.setYAccelOffset(53);
+  mpu.setZAccelOffset(1190);
   mpu.setXGyroOffset(-70);
-  mpu.setYGyroOffset(36);
-  mpu.setZGyroOffset(-16);
+  mpu.setYGyroOffset(63);
+  mpu.setZGyroOffset(-14);
   //fin
 
   Serial.print("ready");
@@ -82,10 +85,17 @@ void setup() {
   Método en el que se programa la funcionalidad
 */
 void loop() {
+  if(encendido){
+    SdPlay.setFile("on.wav");
+    sonarSable();
+    encendido=false;
+  }
+
+  
 	Serial.println("leyendo");
 	sensarMovimiento();
   sensarLuz();
-	delay(2000);
+//	delay(2000);
 }
 
 void sensarLuz(){
@@ -128,13 +138,15 @@ void sensarMovimiento(){
 	//para mi hay que usar una logica de contadores(en tiempo) como dijo el profe
 	if(hayMovimiento(abs(normal-normal2))){
 		//reproducir sonido
+    SdPlay.setFile("swing.wav");
 		Serial.println("hay movimiento");
-		attack++;
+	//	attack++;
 		sonarSable();
 	}else{
 		//preparar logica para el neutro
 		Serial.println("*******************************************************neutro");
-		nonAttack++;
+		//nonAttack++;
+    SdPlay.setFile("quieto.wav");
 		sonarSable();
 	}
 } 
@@ -148,7 +160,7 @@ bool hayMovimiento(double movimiento) {
   bool flagMovimiento = 0;
   if(movimiento>UMBRAL_ACELEROMETRO){
     flagMovimiento = 1;
-    normal=0;
+   // normal=0;
   }
   return flagMovimiento;
 }
@@ -160,8 +172,11 @@ bool hayMovimiento(double movimiento) {
 void sonarSable() {
 	SdPlay.play();
 	while(!SdPlay.isStopped())
-	{ ;
+	{ 
+     // sensarLuz();
 	}
+
+ /*
 	if(attack==1){
 		//reproducir sonido 1
 	}else if(attack==2){
@@ -176,6 +191,7 @@ void sonarSable() {
 	//por ahora asi porque no se implemento nada
 	attack=0;
 	nonAttack=0;
+ */
 }
 
 /*
