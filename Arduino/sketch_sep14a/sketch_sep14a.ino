@@ -17,11 +17,13 @@ int contadorDeTurno=0;
 #define PIN_SENSOR_LDR_ANALOGICO A3
 #define PIN_SCL_6050_ANALOGICO A5
 #define PIN_SDA_6050_ANALOGICO A4
-#define PIN_REED_DIGITAL 5
+#define PIN_REED_DIGITAL 8
 
 //Constantes para pines de Actuadores
 #define PIN_CS_TARJETA_SD_DIGITAL 4
-#define PIN_VIBRADOR_DIGITAL 2
+#define PIN_VIBRADOR_DIGITAL 10
+#define PIN_COLOR_AZUL 5
+#define PIN_COLOR_ROJO 6
 
 // Supuestamente se necesita esto para haer andar el LED RGB Anodo
 #define COMMON_ANODE
@@ -49,22 +51,35 @@ void setup() {
   Serial.begin(9600);
   // Seteo de pines DIGITALES
   pinMode(PIN_REED_DIGITAL, INPUT);
-/*  
-  pinMode(PIN_VIBRADOR_DIGITAL, OUTPUT);
 
-  setColor(DEFAULT_COLOR, DEFAULT_COLOR, DEFAULT_COLOR);
-  */
-  
+  //configuracion de vibrador
+    pinMode(PIN_VIBRADOR_DIGITAL, OUTPUT);
+    analogWrite(PIN_VIBRADOR_DIGITAL,0);
+     Serial.println("Apagamos");
+  //fin
+  //configuracion luces
+    pinMode(PIN_COLOR_ROJO, OUTPUT);
+    pinMode(PIN_COLOR_AZUL, OUTPUT);
+  //fin
   //configuracion sonido
   SdPlay.setSDCSPin(PIN_CS_TARJETA_SD_DIGITAL);
   if(!SdPlay.init(SSDA_MODE_FULLRATE | SSDA_MODE_MONO | SSDA_MODE_AUTOWORKER)){
-	  Serial.print("Error en el modulo SD");
-  }
+	  Serial.println("Error en el modulo SD");
+  }else{
+    Serial.println("Modulo ok");
+    }
   if(!SdPlay.setFile("quieto.wav")){
-  	Serial.print("No se encontro el archivo de audio");
-  }
+  	Serial.println("No se encontro el archivo de audio");
+  }else{
+    Serial.println("sonido ok");
+    }
   //fin
-  
+  Serial.println("Reproduciendo sonido");
+   sonarSable();
+
+Serial.println("Colores");
+activarColorYVibrador();
+   
   //configuracion mpu
   mpu.initialize();
   pinMode(PIN_SCL_6050_ANALOGICO, INPUT);
@@ -85,17 +100,29 @@ void setup() {
   Método en el que se programa la funcionalidad
 */
 void loop() {
-  if(encendido){
-    SdPlay.setFile("on.wav");
-    sonarSable();
-    encendido=false;
-  }
-
-  
-	Serial.println("leyendo");
-	sensarMovimiento();
+  Serial.println("leyendo");
+  sensarMovimiento();
   sensarLuz();
-//	delay(2000);
+  Serial.print("El reed es: ");
+  int valor=digitalRead(PIN_REED_DIGITAL);
+   if(valor==1){
+       analogWrite(PIN_COLOR_AZUL,0);
+      analogWrite(PIN_COLOR_ROJO,0);
+    }else{
+      analogWrite(PIN_COLOR_AZUL,255);
+      analogWrite(PIN_COLOR_ROJO,0);
+      }
+//  delay(2000);
+}
+
+
+boolean reedEncendido(){
+  if(digitalRead(PIN_REED_DIGITAL) == HIGH){
+      return true;
+  }
+  else{
+    return false;
+  }
 }
 
 void sensarLuz(){
@@ -211,3 +238,34 @@ void setColor(int red, int green, int blue)
  
 }
 */
+
+void activarColor(){
+  delay(2000);
+  analogWrite(PIN_COLOR_ROJO,255);
+  delay(2000);
+  Serial.println("mitad de color");
+  analogWrite(PIN_COLOR_ROJO,128);
+  delay(5000);
+  Serial.println("Apagate");
+  analogWrite(PIN_COLOR_ROJO,0);
+  delay(2000);
+  analogWrite(PIN_COLOR_ROJO,255);
+  }
+
+  void activarColorYVibrador(){
+  analogWrite(PIN_COLOR_ROJO,50);
+  analogWrite(PIN_VIBRADOR_DIGITAL,0);
+  delay(5000);
+  analogWrite(PIN_COLOR_ROJO,0);
+  analogWrite(PIN_COLOR_AZUL,100);
+  analogWrite(PIN_VIBRADOR_DIGITAL,255);
+  delay(2000);
+  analogWrite(PIN_COLOR_AZUL,100);
+  analogWrite(PIN_VIBRADOR_DIGITAL,0);
+  analogWrite(PIN_COLOR_ROJO,100);
+  delay(2000);
+  analogWrite(PIN_COLOR_AZUL,0);
+  analogWrite(PIN_COLOR_ROJO,0);
+  }
+
+  
