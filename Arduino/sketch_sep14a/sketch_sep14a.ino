@@ -100,6 +100,41 @@ activarColorYVibrador();
   Método en el que se programa la funcionalidad
 */
 void loop() {
+
+   encendido = reedEncendido();
+  if(encendido){
+    analogWrite(PIN_COLOR_AZUL,255);
+    analogWrite(PIN_COLOR_ROJO,0);
+    SdPlay.setFile("on.wav");
+    SdPlay.play();
+    while(!SdPlay.isStopped()){ 
+    }
+
+    SdPlay.setFile("quieto.wav");
+    SdPlay.play();
+    while(encendido){      
+          sensarMovimiento();
+          sensarLuz();
+          encendido=reedEncendido();
+          if(SdPlay.isStopped()){
+            SdPlay.play();
+          }
+          
+     }
+
+  
+    SdPlay.setFile("off.wav");
+    SdPlay.play();
+    while(!SdPlay.isStopped()){
+    }
+    analogWrite(PIN_COLOR_AZUL,255);
+    analogWrite(PIN_COLOR_ROJO,0);
+  }
+    
+}
+
+ 
+ /* 
   Serial.println("leyendo");
   sensarMovimiento();
   sensarLuz();
@@ -114,7 +149,7 @@ void loop() {
       }
 //  delay(2000);
 }
-
+*/
 
 boolean reedEncendido(){
   if(digitalRead(PIN_REED_DIGITAL) == HIGH){
@@ -164,17 +199,17 @@ void sensarMovimiento(){
 	
 	//para mi hay que usar una logica de contadores(en tiempo) como dijo el profe
 	if(hayMovimiento(abs(normal-normal2))){
-		//reproducir sonido
-    SdPlay.setFile("swing.wav");
-		Serial.println("hay movimiento");
-	//	attack++;
-		sonarSable();
-	}else{
-		//preparar logica para el neutro
-		Serial.println("*******************************************************neutro");
-		//nonAttack++;
+	  SdPlay.setFile("swing.wav");
+    SdPlay.play();
+    while(!SdPlay.isStopped()){
+      encendido = reedEncendido();
+      sensarLuz();
+    }
+    Serial.println("hay movimiento");
     SdPlay.setFile("quieto.wav");
-		sonarSable();
+    SdPlay.play();
+	}else{
+	  Serial.println("*******************************************************neutro");
 	}
 } 
 
