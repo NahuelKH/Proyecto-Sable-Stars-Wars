@@ -54,7 +54,6 @@ void setup() {
 
   //configuracion de vibrador
     pinMode(PIN_VIBRADOR_DIGITAL, OUTPUT);
-    analogWrite(PIN_VIBRADOR_DIGITAL,0);
      Serial.println("Apagamos");
   //fin
   //configuracion luces
@@ -78,7 +77,7 @@ void setup() {
    sonarSable();
 
 Serial.println("Colores");
-activarColorYVibrador();
+//activarColorYVibrador();
    
   //configuracion mpu
   mpu.initialize();
@@ -100,16 +99,19 @@ activarColorYVibrador();
   Método en el que se programa la funcionalidad
 */
 void loop() {
-
+    analogWrite(PIN_COLOR_AZUL,0);
+    analogWrite(PIN_COLOR_ROJO,0);
+    analogWrite(PIN_VIBRADOR_DIGITAL,0);
    encendido = reedEncendido();
   if(encendido){
-    analogWrite(PIN_COLOR_AZUL,255);
-    analogWrite(PIN_COLOR_ROJO,0);
+    analogWrite(PIN_COLOR_AZUL,0);
+    analogWrite(PIN_COLOR_ROJO,255);
     SdPlay.setFile("on.wav");
     SdPlay.play();
     while(!SdPlay.isStopped()){ 
+      analogWrite(PIN_VIBRADOR_DIGITAL,255);
     }
-
+    analogWrite(PIN_VIBRADOR_DIGITAL,0);
     SdPlay.setFile("quieto.wav");
     SdPlay.play();
     while(encendido){      
@@ -118,19 +120,16 @@ void loop() {
           encendido=reedEncendido();
           if(SdPlay.isStopped()){
             SdPlay.play();
-          }
-          
+          }    
      }
-
-  
     SdPlay.setFile("off.wav");
     SdPlay.play();
-    while(!SdPlay.isStopped()){
-    }
-    analogWrite(PIN_COLOR_AZUL,255);
+    analogWrite(PIN_VIBRADOR_DIGITAL,255);
+    while(!SdPlay.isStopped()){}
+    analogWrite(PIN_COLOR_AZUL,0);
     analogWrite(PIN_COLOR_ROJO,0);
+    analogWrite(PIN_VIBRADOR_DIGITAL,0);
   }
-    
 }
 
  
@@ -202,9 +201,11 @@ void sensarMovimiento(){
 	  SdPlay.setFile("swing.wav");
     SdPlay.play();
     while(!SdPlay.isStopped()){
+      analogWrite(PIN_VIBRADOR_DIGITAL,255);
       encendido = reedEncendido();
       sensarLuz();
     }
+    analogWrite(PIN_VIBRADOR_DIGITAL,0);
     Serial.println("hay movimiento");
     SdPlay.setFile("quieto.wav");
     SdPlay.play();
