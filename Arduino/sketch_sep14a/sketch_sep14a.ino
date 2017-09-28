@@ -74,7 +74,7 @@ void setup() {
     }
   //fin
   Serial.println("Reproduciendo sonido");
-   sonarSable();
+   //sonarSable();
 
 Serial.println("Colores");
 //activarColorYVibrador();
@@ -104,8 +104,8 @@ void loop() {
     analogWrite(PIN_VIBRADOR_DIGITAL,0);
    encendido = reedEncendido();
   if(encendido){
-    analogWrite(PIN_COLOR_AZUL,0);
-    analogWrite(PIN_COLOR_ROJO,255);
+    analogWrite(PIN_COLOR_AZUL,255);
+    analogWrite(PIN_COLOR_ROJO,0);
     SdPlay.setFile("on.wav");
     SdPlay.play();
     while(!SdPlay.isStopped()){ 
@@ -163,6 +163,14 @@ void sensarLuz(){
     luz=analogRead(PIN_SENSOR_LDR_ANALOGICO);
     Serial.print("Luz: ");
     Serial.println(luz);
+    if(luz>220){
+        analogWrite(PIN_COLOR_AZUL,255);
+        analogWrite(PIN_COLOR_ROJO,0);
+    }else{
+        analogWrite(PIN_COLOR_AZUL,0);
+        analogWrite(PIN_COLOR_ROJO,50);
+      
+    }
 }
  
 void sensarMovimiento(){
@@ -232,13 +240,13 @@ bool hayMovimiento(double movimiento) {
    método que hara sonar el sable cuando se mueva.
    @author: Pablo
 */
-void sonarSable() {
+/*void sonarSable() {
 	SdPlay.play();
 	while(!SdPlay.isStopped())
 	{ 
      // sensarLuz();
 	}
-
+*/
  /*
 	if(attack==1){
 		//reproducir sonido 1
@@ -255,7 +263,7 @@ void sonarSable() {
 	attack=0;
 	nonAttack=0;
  */
-}
+//}
 
 /*
  * método que setea el color del LED RGB
@@ -270,11 +278,10 @@ void setColor(int red, int green, int blue)
     green = 255 - green;
     blue = 255 - blue;
   #endif
-
  
 }
 */
-
+/*
 void activarColor(){
   delay(2000);
   analogWrite(PIN_COLOR_ROJO,255);
@@ -302,6 +309,4 @@ void activarColor(){
   delay(2000);
   analogWrite(PIN_COLOR_AZUL,0);
   analogWrite(PIN_COLOR_ROJO,0);
-  }
-
-  
+  }*/
