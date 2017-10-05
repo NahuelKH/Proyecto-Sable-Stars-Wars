@@ -2,6 +2,7 @@
 #include <I2Cdev.h>
 #include <MPU6050.h>
 #include <SimpleSDAudio.h>
+#include <SoftwareSerial.h>
 
 #define DEBUGG_MODE 1
 
@@ -41,6 +42,8 @@ int nonAttack = 0;
 int semAttack = 0;
 int luz=0;
 boolean encendido=true;
+char estado="X";
+SoftwareSerial BTserial(3,7); // RX | TX
 /**
   Método que inicializa/configura el arduino.
 */
@@ -49,6 +52,9 @@ void setup() {
   //pinMode(PIN_SENSOR_LDR_ANALOGICO, INPUT);
   Wire.begin();
   Serial.begin(9600);
+
+  BTserial.begin(38400); 
+  
   // Seteo de pines DIGITALES
   pinMode(PIN_REED_DIGITAL, INPUT);
 
@@ -100,7 +106,11 @@ Serial.println("Colores");
 */
 void loop() {
     analogWrite(PIN_COLOR_AZUL,0);
+    analogWrite(PIN_COLOR_ROJO,255);
+    delay(5000);
+    analogWrite(PIN_COLOR_AZUL,0);
     analogWrite(PIN_COLOR_ROJO,0);
+    delay(5000);
     analogWrite(PIN_VIBRADOR_DIGITAL,0);
    encendido = reedEncendido();
   if(encendido){
@@ -114,7 +124,8 @@ void loop() {
     analogWrite(PIN_VIBRADOR_DIGITAL,0);
     SdPlay.setFile("quieto.wav");
     SdPlay.play();
-    while(encendido){      
+    while(encendido){
+          leerBluetooth();
           sensarMovimiento();
           sensarLuz();
           encendido=reedEncendido();
@@ -132,7 +143,38 @@ void loop() {
   }
 }
 
- 
+void leerBluetooth(){
+  Serial.println("leyendoBLUETOOTH");
+  Serial.println(BTserial.available());
+  if(BTserial.available() > 0){
+    estado = (char)BTserial.read();
+    Serial.println(estado);
+    switch(estado){
+      case '0':
+      Serial.println("DEBIL");
+        analogWrite(PIN_COLOR_AZUL,40);
+        analogWrite(PIN_COLOR_ROJO,0);
+        break;
+      case '1':
+      Serial.println("FUERTE");
+        analogWrite(PIN_COLOR_AZUL,255);
+        analogWrite(PIN_COLOR_ROJO,0);
+        break;
+       case '2':
+       Serial.println("CHOQUE");
+        SdPlay.setFile("swing.wav"); // TODO -> CAMBIAR SONIDO
+        SdPlay.play();
+        while(!SdPlay.isStopped()){} // TODO -> AGREGAR FORMA DE SEGUIR SENSANDO
+        break;
+       case '3':
+       Serial.println("ACELERACION");
+        SdPlay.setFile("on.wav"); // TODO -> CAMBIAR SONIDO
+        SdPlay.play();
+        while(!SdPlay.isStopped()){} // TODO -> AGREGAR FORMA DE SEGUIR SENSANDO
+        break;
+      }
+  }
+}
  /* 
   Serial.println("leyendo");
   sensarMovimiento();
