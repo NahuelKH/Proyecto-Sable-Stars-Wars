@@ -98,7 +98,7 @@ Serial.println("Colores");
   mpu.setZGyroOffset(-14);
   //fin
 
-   BTserial.begin(38400); 
+   BTserial.begin(9600); 
 
   Serial.print("ready");
 }
@@ -107,6 +107,9 @@ Serial.println("Colores");
   Método en el que se programa la funcionalidad
 */
 void loop() {
+  Serial.println("Leyendo bluetooth");
+  leerBluetooth();
+  delay(2000);
     analogWrite(PIN_COLOR_AZUL,azul);
     analogWrite(PIN_COLOR_ROJO,rojo);
     
@@ -245,7 +248,7 @@ bool hayMovimiento(double movimiento) {
 void leerBluetooth(){
   Serial.println("leyendo BT");
   if(BTserial.available()>0){
-    estado=(char)BTserial.read();
+    estado=BTserial.read();
     Serial.println(estado);
     switch(estado){
       case '0':
