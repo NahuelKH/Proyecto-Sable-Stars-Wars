@@ -7,12 +7,17 @@
 #define DEBUGG_MODE 1
 
 MPU6050 mpu;
-
+SoftwareSerial BTserial(3,7); // RX | TX
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
 double normal;
 double normal2;
 int contadorDeTurno=0;
+int rojo=0;
+int azul=0; 
+char estado='x';
+char color='A';
+
 
 //Constantes para pines de sensores
 #define PIN_SENSOR_LDR_ANALOGICO A3
@@ -42,8 +47,6 @@ int nonAttack = 0;
 int semAttack = 0;
 int luz=0;
 boolean encendido=true;
-char estado="X";
-SoftwareSerial BTserial(3,7); // RX | TX
 /**
   Método que inicializa/configura el arduino.
 */
@@ -52,9 +55,6 @@ void setup() {
   //pinMode(PIN_SENSOR_LDR_ANALOGICO, INPUT);
   Wire.begin();
   Serial.begin(9600);
-
-  BTserial.begin(38400); 
-  
   // Seteo de pines DIGITALES
   pinMode(PIN_REED_DIGITAL, INPUT);
 
@@ -98,6 +98,8 @@ Serial.println("Colores");
   mpu.setZGyroOffset(-14);
   //fin
 
+   BTserial.begin(38400); 
+
   Serial.print("ready");
 }
 
@@ -105,17 +107,15 @@ Serial.println("Colores");
   Método en el que se programa la funcionalidad
 */
 void loop() {
-    analogWrite(PIN_COLOR_AZUL,0);
-    analogWrite(PIN_COLOR_ROJO,255);
-    delay(5000);
-    analogWrite(PIN_COLOR_AZUL,0);
-    analogWrite(PIN_COLOR_ROJO,0);
-    delay(5000);
+    analogWrite(PIN_COLOR_AZUL,azul);
+    analogWrite(PIN_COLOR_ROJO,rojo);
+    
     analogWrite(PIN_VIBRADOR_DIGITAL,0);
    encendido = reedEncendido();
   if(encendido){
-    analogWrite(PIN_COLOR_AZUL,255);
-    analogWrite(PIN_COLOR_ROJO,0);
+    azul=255;
+    rojo=0;
+    setearColor(azul,rojo);
     SdPlay.setFile("on.wav");
     SdPlay.play();
     while(!SdPlay.isStopped()){ 
@@ -125,10 +125,8 @@ void loop() {
     SdPlay.setFile("quieto.wav");
     SdPlay.play();
     while(encendido){
-          leerBluetooth();
           sensarMovimiento();
-          sensarLuz();
-          encendido=reedEncendido();
+          sensar();
           if(SdPlay.isStopped()){
             SdPlay.play();
           }    
@@ -137,61 +135,18 @@ void loop() {
     SdPlay.play();
     analogWrite(PIN_VIBRADOR_DIGITAL,255);
     while(!SdPlay.isStopped()){}
-    analogWrite(PIN_COLOR_AZUL,0);
-    analogWrite(PIN_COLOR_ROJO,0);
+    azul=0;
+    rojo=0;
+    setearColor(azul,rojo);
     analogWrite(PIN_VIBRADOR_DIGITAL,0);
   }
 }
 
-void leerBluetooth(){
-  Serial.println("leyendoBLUETOOTH");
-  Serial.println(BTserial.available());
-  if(BTserial.available() > 0){
-    estado = (char)BTserial.read();
-    Serial.println(estado);
-    switch(estado){
-      case '0':
-      Serial.println("DEBIL");
-        analogWrite(PIN_COLOR_AZUL,40);
-        analogWrite(PIN_COLOR_ROJO,0);
-        break;
-      case '1':
-      Serial.println("FUERTE");
-        analogWrite(PIN_COLOR_AZUL,255);
-        analogWrite(PIN_COLOR_ROJO,0);
-        break;
-       case '2':
-       Serial.println("CHOQUE");
-        SdPlay.setFile("swing.wav"); // TODO -> CAMBIAR SONIDO
-        SdPlay.play();
-        while(!SdPlay.isStopped()){} // TODO -> AGREGAR FORMA DE SEGUIR SENSANDO
-        break;
-       case '3':
-       Serial.println("ACELERACION");
-        SdPlay.setFile("on.wav"); // TODO -> CAMBIAR SONIDO
-        SdPlay.play();
-        while(!SdPlay.isStopped()){} // TODO -> AGREGAR FORMA DE SEGUIR SENSANDO
-        break;
-      }
-  }
-}
- /* 
-  Serial.println("leyendo");
-  sensarMovimiento();
-  sensarLuz();
-  Serial.print("El reed es: ");
-  int valor=digitalRead(PIN_REED_DIGITAL);
-   if(valor==1){
-       analogWrite(PIN_COLOR_AZUL,0);
-      analogWrite(PIN_COLOR_ROJO,0);
-    }else{
-      analogWrite(PIN_COLOR_AZUL,255);
-      analogWrite(PIN_COLOR_ROJO,0);
-      }
-//  delay(2000);
-}
-*/
+ 
 
+/*
+ * devuelve verdadero si el reed detecta el magnetismo
+ */
 boolean reedEncendido(){
   if(digitalRead(PIN_REED_DIGITAL) == HIGH){
       return true;
@@ -201,20 +156,28 @@ boolean reedEncendido(){
   }
 }
 
+/*
+ * obtiene el valor sensado por el ldr
+ * @author pablo
+ */
 void sensarLuz(){
     luz=analogRead(PIN_SENSOR_LDR_ANALOGICO);
     Serial.print("Luz: ");
     Serial.println(luz);
     if(luz>220){
-        analogWrite(PIN_COLOR_AZUL,255);
-        analogWrite(PIN_COLOR_ROJO,0);
+        azul=255;
+        rojo=255;
+        setearColor(azul,rojo);
     }else{
-        analogWrite(PIN_COLOR_AZUL,0);
-        analogWrite(PIN_COLOR_ROJO,50);
+        azul=azul-215<0?0:azul-215;
+        rojo=rojo-215<0?0:rojo-215;
+        setearColor(azul,rojo);
       
     }
 }
- 
+ /*
+ * obtiene el valor sensado por el acelerometro
+ */
 void sensarMovimiento(){
 	mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
 	if(DEBUGG_MODE){
@@ -252,8 +215,7 @@ void sensarMovimiento(){
     SdPlay.play();
     while(!SdPlay.isStopped()){
       analogWrite(PIN_VIBRADOR_DIGITAL,255);
-      encendido = reedEncendido();
-      sensarLuz();
+      sensar();
     }
     analogWrite(PIN_VIBRADOR_DIGITAL,0);
     Serial.println("hay movimiento");
@@ -277,78 +239,98 @@ bool hayMovimiento(double movimiento) {
   }
   return flagMovimiento;
 }
-
 /*
-   método que hara sonar el sable cuando se mueva.
-   @author: Pablo
-*/
-/*void sonarSable() {
-	SdPlay.play();
-	while(!SdPlay.isStopped())
-	{ 
-     // sensarLuz();
-	}
-*/
- /*
-	if(attack==1){
-		//reproducir sonido 1
-	}else if(attack==2){
-		//reproducir sonido 2
-	}else if(attack==3){
-		//reproducir combo
-		//ATTACK=0;
-	}
-	if(nonAttack==1){
-		//reproducir sonido neutro
-	}
-	//por ahora asi porque no se implemento nada
-	attack=0;
-	nonAttack=0;
+ * obtiene el valor enviado por bluetooth
  */
-//}
+void leerBluetooth(){
+  Serial.println("leyendo BT");
+  if(BTserial.available()>0){
+    estado=(char)BTserial.read();
+    Serial.println(estado);
+    switch(estado){
+      case '0':
+        Serial.println("DEBIL");
+        if(color='A'){
+          azul=50;
+          rojo=0;
+        }else if(color='R'){
+          azul=0;
+          rojo=50;
+        }else{
+          azul=50;
+          rojo=50;
+        }
+        setearColor(azul,rojo);
+      break;
+      case '1':
+        Serial.println("FUERTE");
+       if(color='A'){
+          azul=255;
+          rojo=0;
+        }else if(color='R'){
+          azul=0;
+          rojo=255;
+        }else{
+          azul=255;
+          rojo=255;
+        }
+        setearColor(azul,rojo);
+      break;
+      case '2':
+         Serial.println("CHOQUE");
+         SdPlay.setFile("swing.wav");
+         SdPlay.play();
+         while(!SdPlay.isStopped()){
+          sensar();
+         }
+         break;
+       case '3':
+         Serial.println("ACELERACION");
+         SdPlay.setFile("on.wav");
+         SdPlay.play();
+         while(!SdPlay.isStopped()){
+          sensar();
+         }
+         break;
+        case 'A':
+         azul=255;
+         rojo=0;
+         color='A';
+         setearColor(azul,rojo);
+        break;
+        case 'R':
+         azul=0;
+         rojo=255;
+         color='R';
+         setearColor(azul,rojo);
+        break;
+        case 'V':
+         azul=255;
+         rojo=255;
+         color='V';
+         setearColor(azul,rojo);
+        break;
 
-/*
- * método que setea el color del LED RGB
- * @author: Martin
- */
-
- /*
-void setColor(int red, int green, int blue)
-{
-  #ifdef COMMON_ANODE
-    red = 255 - red;
-    green = 255 - green;
-    blue = 255 - blue;
-  #endif
- 
-}
-*/
-/*
-void activarColor(){
-  delay(2000);
-  analogWrite(PIN_COLOR_ROJO,255);
-  delay(2000);
-  Serial.println("mitad de color");
-  analogWrite(PIN_COLOR_ROJO,128);
-  delay(5000);
-  Serial.println("Apagate");
-  analogWrite(PIN_COLOR_ROJO,0);
-  delay(2000);
-  analogWrite(PIN_COLOR_ROJO,255);
+    }
   }
+}
 
-  void activarColorYVibrador(){
-  analogWrite(PIN_COLOR_ROJO,50);
-  analogWrite(PIN_VIBRADOR_DIGITAL,0);
-  delay(5000);
-  analogWrite(PIN_COLOR_ROJO,0);
-  analogWrite(PIN_COLOR_AZUL,100);
-  analogWrite(PIN_VIBRADOR_DIGITAL,255);
-  delay(2000);
-  analogWrite(PIN_COLOR_AZUL,100);
-  analogWrite(PIN_VIBRADOR_DIGITAL,0);
-  analogWrite(PIN_COLOR_ROJO,100);
-  delay(2000);
-  analogWrite(PIN_COLOR_AZUL,0);
-  analogWrite(PIN_COLOR_ROJO,0);
-  }*/
+/*
+ * setea el color del sable
+ * @author pablo
+ */
+void setearColor(int azul, int rojo){
+   analogWrite(PIN_COLOR_AZUL,azul);
+   analogWrite(PIN_COLOR_ROJO,rojo);
+}
+
+
+/*
+ * Llama a los metodos que leen los sensores y el BT.
+ */
+void sensar(){
+    leerBluetooth();      
+    sensarLuz();
+    encendido=reedEncendido();
+}
+
