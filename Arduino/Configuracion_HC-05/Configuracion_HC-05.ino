@@ -41,7 +41,7 @@ void setup()
 
     //Se configura la velocidad que tendra el HC05 para recbir por Serie los comandos AT.
     //NOTA: Conviene siempre dejarlo por defecto a 38400
-    BTserial.begin(38400); 
+    BTserial.begin(9600); 
     
     //Se configura la velocidad de transferencia de datos entre el Bluethoot  HC05 y el de Android.
     //BTserial.begin(9600); 

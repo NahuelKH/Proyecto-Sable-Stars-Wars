@@ -43,47 +43,47 @@ uint8_t     SD_L1_GetCardType();
 
 // error codes
 /** timeout error for command CMD0 (initialize card in SPI mode), signal problem */
-#define SD_CARD_ERROR_CMD0          0x01
+#define SD_CARD_ERROR_CMD0          1
 /** CMD8 was not accepted - not a valid SD card */
-#define SD_CARD_ERROR_CMD8          0x02
+#define SD_CARD_ERROR_CMD8          2
 /** ACMD41 initialization process timeout */
-#define SD_CARD_ERROR_ACMD41        0x03
+#define SD_CARD_ERROR_ACMD41        3
 /** card returned an error response for CMD58 (read OCR) */
-#define SD_CARD_ERROR_CMD58         0x04
+#define SD_CARD_ERROR_CMD58         4
 /** card returned an error response for CMD16 (set block len) */
-#define SD_CARD_ERROR_CMD16         0x05
+#define SD_CARD_ERROR_CMD16         5
 /** card operation voltage range doesn't match (2.7V - 3.6V) */
-#define SD_CARD_ERROR_VOLTMATCH     0x06
+#define SD_CARD_ERROR_VOLTMATCH     6
 /** timeout while waiting for start of read data */
-#define SD_CARD_ERROR_READ_TIMEOUT  0x07
+#define SD_CARD_ERROR_READ_TIMEOUT  7
 /** card returned error token when tried to read data */
-#define SD_CARD_ERROR_READ          0x08
+#define SD_CARD_ERROR_READ          8
 /** card returned an error response for CMD17 (read single block) */
-#define SD_CARD_ERROR_CMD17         0x09
+#define SD_CARD_ERROR_CMD17         9
 /** card returned an error token when tried to write data */
-#define SD_CARD_ERROR_WRITE         0x0a
+#define SD_CARD_ERROR_WRITE         10
 /** card returned an error response for CMD24 (write single block) */
-#define SD_CARD_ERROR_CMD24         0x0b
+#define SD_CARD_ERROR_CMD24         11
 /** timeout while waiting for writing data */
-#define SD_CARD_ERROR_WRITE_TIMEOUT 0x0c
+#define SD_CARD_ERROR_WRITE_TIMEOUT 12
 /** card returned an error in status after a data writing command */
-#define SD_CARD_ERROR_WRITE_PROGR   0x0d
+#define SD_CARD_ERROR_WRITE_PROGR   13
 /** card returned an error response for CMD9  (read CSD) */
-#define SD_CARD_ERROR_CMD9          0x0e
+#define SD_CARD_ERROR_CMD9          14
 /** card returned an error response for CMD10 (read CID) */
-#define SD_CARD_ERROR_CMD10         0x0f
+#define SD_CARD_ERROR_CMD10         15
 /** card returned an error response for CMD18 (read multi block) */
-#define SD_CARD_ERROR_CMD18         0x10
+#define SD_CARD_ERROR_CMD18         16
 /** card returned an error response for CMD12 (stop block operation) */
-#define SD_CARD_ERROR_CMD12         0x11
+#define SD_CARD_ERROR_CMD12         17
 /** card returned an error response for ACMD23 (set pre-erase count) */
-#define SD_CARD_ERROR_ACMD23        0x12
+#define SD_CARD_ERROR_ACMD23        18
 /** card returned an error response for CMD25 (write multi block) */
-#define SD_CARD_ERROR_CMD25         0x13
+#define SD_CARD_ERROR_CMD25         19
 /** card did not become ready for a multiple block write */
-#define SD_CARD_ERROR_WRITE_MB      0x14 
+#define SD_CARD_ERROR_WRITE_MB      20
 /** timeout after sending STOP_TRAN_TOKEN after write multi block data */
-#define SD_CARD_ERROR_STOP_TRAN     0x15
+#define SD_CARD_ERROR_STOP_TRAN     21
 
 // card types
 /** Standard capacity V1 SD card */

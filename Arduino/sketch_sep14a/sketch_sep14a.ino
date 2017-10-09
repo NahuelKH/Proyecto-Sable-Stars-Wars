@@ -7,7 +7,7 @@
 #define DEBUGG_MODE 1
 
 MPU6050 mpu;
-SoftwareSerial BTserial(3,7); // RX | TX
+
 int16_t ax, ay, az;
 int16_t gx, gy, gz;
 double normal;
@@ -50,6 +50,8 @@ boolean encendido=true;
 /**
   Método que inicializa/configura el arduino.
 */
+
+SoftwareSerial BTserial(3,7); // RX | TX
 void setup() {
   // Seteo de pines ANALOGICOS
   //pinMode(PIN_SENSOR_LDR_ANALOGICO, INPUT);

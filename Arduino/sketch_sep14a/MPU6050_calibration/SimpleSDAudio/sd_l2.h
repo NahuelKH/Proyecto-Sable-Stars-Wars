@@ -4,25 +4,25 @@
 #define SD_ENABLE_DIR_VIEW          1
 
 /** No valid MBR/FAT-BS signature found in sector 0 */
-#define SD_L2_ERROR_INVAL_SECT0     0x30
+#define SD_L2_ERROR_INVAL_SECT0     22
 /** Malformed FAT boot sector */
-#define SD_L2_ERROR_INVAL_BS        0x31
+#define SD_L2_ERROR_INVAL_BS        23
 /** FAT12 is not supported */
-#define SD_L2_ERROR_FAT12           0x32
+#define SD_L2_ERROR_FAT12           24
 /** FAT not initialized properly */
-#define SD_L2_ERROR_FAT_NOT_INIT    0x33
+#define SD_L2_ERROR_FAT_NOT_INIT    25
 /** End of cluster reached (not a real error, just information) */
-#define SD_L2_ERROR_DIR_EOC         0x34
+#define SD_L2_ERROR_DIR_EOC         26
 /** File not found after reaching end of directory */
-#define SD_L2_ERROR_FILE_NOT_FOUND  0x35
+#define SD_L2_ERROR_FILE_NOT_FOUND  27
 /** Fragmentation found */
-#define SD_L2_ERROR_FRAGMET_FOUND   0x36
+#define SD_L2_ERROR_FRAGMET_FOUND   28
 /** Error in FAT entry */
-#define SD_L2_ERROR_FAT_ENTRY       0x37
+#define SD_L2_ERROR_FAT_ENTRY       29
 /** End of file reached */
-#define SD_L2_ERROR_EOF             0x38
+#define SD_L2_ERROR_EOF             30
 /** WorkBuf not set */
-#define SD_L2_ERROR_WORKBUF         0x39
+#define SD_L2_ERROR_WORKBUF         31
 
 
 #define SD_L2_PARTTYPE_UNKNOWN      0
