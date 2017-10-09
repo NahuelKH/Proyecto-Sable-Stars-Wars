@@ -1,8 +1,10 @@
 #include <Wire.h>
 #include <I2Cdev.h>
 #include <MPU6050.h>
-#include <SimpleSDAudio.h>
+//#include <SimpleSDAudio.h>
 #include <SoftwareSerial.h>
+//#include <SD.h>
+//#include <TMRpcm.h>
 
 #define DEBUGG_MODE 1
 
@@ -31,6 +33,8 @@ char color='A';
 #define PIN_COLOR_AZUL 5
 #define PIN_COLOR_ROJO 6
 
+#define SD_ChipSelectPin 4
+
 // Supuestamente se necesita esto para haer andar el LED RGB Anodo
 #define COMMON_ANODE
 
@@ -50,7 +54,7 @@ boolean encendido=true;
 /**
   Método que inicializa/configura el arduino.
 */
-
+TMRpcm tmrpcm;
 SoftwareSerial BTserial(3,7); // RX | TX
 void setup() {
   // Seteo de pines ANALOGICOS
@@ -68,8 +72,16 @@ void setup() {
     pinMode(PIN_COLOR_ROJO, OUTPUT);
     pinMode(PIN_COLOR_AZUL, OUTPUT);
   //fin
-  //configuracion sonido
-  SdPlay.setSDCSPin(PIN_CS_TARJETA_SD_DIGITAL);
+  //configuracion sonido asdasd
+  tmrpcm.speakerPin = 9;
+   if (!SD.begin(SD_ChipSelectPin)) {  // see if the card is present and can be initialized:
+    Serial.println("SD fail");  
+    return;   // don't do anything more if not
+  }else{
+    Serial.println("todo okkkkkkkkkk");
+     tmrpcm.play("on.wav");
+    }
+ /* SdPlay.setSDCSPin(PIN_CS_TARJETA_SD_DIGITAL);
   if(!SdPlay.init(SSDA_MODE_FULLRATE | SSDA_MODE_MONO | SSDA_MODE_AUTOWORKER)){
 	  Serial.println("Error en el modulo SD");
   }else{
@@ -79,7 +91,7 @@ void setup() {
   	Serial.println("No se encontro el archivo de audio");
   }else{
     Serial.println("sonido ok");
-    }
+    }*/
   //fin
   Serial.println("Reproduciendo sonido");
    //sonarSable();
@@ -101,7 +113,7 @@ Serial.println("Colores");
   //fin
 
    BTserial.begin(9600); 
-
+delay(5000);
   Serial.print("ready");
 }
 
@@ -110,8 +122,11 @@ Serial.println("Colores");
 */
 void loop() {
   Serial.println("Leyendo bluetooth");
+   delay(2000);
   leerBluetooth();
   delay(2000);
+  tmrpcm.play("on.wav");
+  delay(3000);
     analogWrite(PIN_COLOR_AZUL,azul);
     analogWrite(PIN_COLOR_ROJO,rojo);
     
@@ -121,25 +136,25 @@ void loop() {
     azul=255;
     rojo=0;
     setearColor(azul,rojo);
-    SdPlay.setFile("on.wav");
-    SdPlay.play();
-    while(!SdPlay.isStopped()){ 
+    //SdPlay.setFile("on.wav");
+    //SdPlay.play();
+   /* while(!SdPlay.isStopped()){ 
       analogWrite(PIN_VIBRADOR_DIGITAL,255);
-    }
+    }*/
     analogWrite(PIN_VIBRADOR_DIGITAL,0);
-    SdPlay.setFile("quieto.wav");
-    SdPlay.play();
+  //  SdPlay.setFile("quieto.wav");
+    //SdPlay.play();
     while(encendido){
           sensarMovimiento();
           sensar();
-          if(SdPlay.isStopped()){
+        /*  if(SdPlay.isStopped()){
             SdPlay.play();
-          }    
+          }*/    
      }
-    SdPlay.setFile("off.wav");
-    SdPlay.play();
+  //  SdPlay.setFile("off.wav");
+    //SdPlay.play();
     analogWrite(PIN_VIBRADOR_DIGITAL,255);
-    while(!SdPlay.isStopped()){}
+    //while(!SdPlay.isStopped()){}
     azul=0;
     rojo=0;
     setearColor(azul,rojo);
@@ -216,16 +231,16 @@ void sensarMovimiento(){
 	
 	//para mi hay que usar una logica de contadores(en tiempo) como dijo el profe
 	if(hayMovimiento(abs(normal-normal2))){
-	  SdPlay.setFile("swing.wav");
-    SdPlay.play();
-    while(!SdPlay.isStopped()){
+	//  SdPlay.setFile("swing.wav");
+    //SdPlay.play();
+    /*while(!SdPlay.isStopped()){
       analogWrite(PIN_VIBRADOR_DIGITAL,255);
       sensar();
-    }
+    }*/
     analogWrite(PIN_VIBRADOR_DIGITAL,0);
     Serial.println("hay movimiento");
-    SdPlay.setFile("quieto.wav");
-    SdPlay.play();
+    //SdPlay.setFile("quieto.wav");
+    //SdPlay.play();
 	}else{
 	  Serial.println("*******************************************************neutro");
 	}
@@ -283,19 +298,19 @@ void leerBluetooth(){
       break;
       case '2':
          Serial.println("CHOQUE");
-         SdPlay.setFile("swing.wav");
+       /*  SdPlay.setFile("swing.wav");
          SdPlay.play();
          while(!SdPlay.isStopped()){
           sensar();
-         }
+         }*/
          break;
        case '3':
          Serial.println("ACELERACION");
-         SdPlay.setFile("on.wav");
+         /*SdPlay.setFile("on.wav");
          SdPlay.play();
          while(!SdPlay.isStopped()){
           sensar();
-         }
+         }*/
          break;
         case 'A':
          azul=255;
