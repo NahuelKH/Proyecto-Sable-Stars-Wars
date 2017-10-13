@@ -124,7 +124,7 @@ void loop() {
           sensarMovimiento();
           sensar();
           if(!tmrpcm.isPlaying()){
-             tmrpcm.play("on.wav");
+             tmrpcm.play("hum.wav");
           }    
      }
     tmrpcm.play("off.wav");
