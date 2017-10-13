@@ -5,7 +5,7 @@
 #include <SD.h>
 #include <TMRpcm.h>
 
-#define DEBUGG_MODE 1
+#define DEBUGG_MODE 0
 
 MPU6050 mpu;
 
@@ -18,7 +18,7 @@ double normal;
 double normal2;
 int contadorDeTurno=0;
 int rojo=0;
-int azul=0; 
+int azul=1; 
 char estado='x';
 char color='A';
 
@@ -80,7 +80,6 @@ void setup() {
     return;   // don't do anything more if not
   }else{
     Serial.println("todo okkkkkkkkkk");
-     tmrpcm.play("on.wav");
    }
    
   //configuracion mpu
@@ -97,7 +96,7 @@ void setup() {
   //fin
 
    BTserial.begin(9600); 
-delay(5000);
+//delay(5000);
   Serial.print("ready");
 }
 
@@ -110,10 +109,21 @@ void loop() {
     analogWrite(PIN_COLOR_ROJO,rojo);
     
     analogWrite(PIN_VIBRADOR_DIGITAL,0);
+  /*  tmrpcm.play("on.wav");
+    while(tmrpcm.isPlaying()){ 
+      analogWrite(PIN_VIBRADOR_DIGITAL,255);
+    }*/
+/*
+    tmrpcm.play("on.wav");
+    while(tmrpcm.isPlaying()){ 
+      analogWrite(PIN_VIBRADOR_DIGITAL,255);
+    }*/
+    sensarMovimiento();
+          sensar();
    encendido = reedEncendido();
   if(encendido){
-    azul=255;
-    rojo=0;
+    azul=0;
+    rojo=1;
     setearColor(azul,rojo); 
     tmrpcm.play("on.wav");
     while(tmrpcm.isPlaying()){ 
@@ -124,7 +134,7 @@ void loop() {
           sensarMovimiento();
           sensar();
           if(!tmrpcm.isPlaying()){
-             tmrpcm.play("on.wav");
+             tmrpcm.play("quieto.wav");
           }    
      }
     tmrpcm.play("off.wav");
@@ -159,17 +169,24 @@ boolean reedEncendido(){
  */
 void sensarLuz(){
     luz=analogRead(PIN_SENSOR_LDR_ANALOGICO);
-    Serial.print("Luz: ");
-    Serial.println(luz);
+    //Serial.print("Luz: ");
+    //Serial.println(luz);
     if(luz>220){
-        azul=255;
-        rojo=255;
+        if(azul>0){
+          //azul=255;
+        }
+        if(rojo>0){
+          //rojo=255;
+        }
         setearColor(azul,rojo);
     }else{
-        azul=azul-215<0?0:azul-215;
-        rojo=rojo-215<0?0:rojo-215;
+        if(azul>0){
+          //azul=50;
+        }
+        if(rojo>0){
+          //rojo=50;
+        }
         setearColor(azul,rojo);
-      
     }
 }
  /*
@@ -219,7 +236,7 @@ void sensarMovimiento(){
     
     tmrpcm.play("quieto.wav");
 	}else{
-	  Serial.println("*******************************************************neutro");
+	  //Serial.println("*******************************************************neutro");
 	}
 } 
 
@@ -240,16 +257,16 @@ bool hayMovimiento(double movimiento) {
  * obtiene el valor enviado por bluetooth
  */
 void leerBluetooth(){
-  Serial.println("leyendo BT");
+  //Serial.println("leyendo BT");
   if(BTserial.available()>0){
-    estado=BTserial.read();
+    estado=(char)BTserial.read();
     Serial.println(estado);
     switch(estado){
       case '0':
         Serial.println("DEBIL");
         if(color='A'){
-          azul=50;
-          rojo=0;
+          azul=20;
+          rojo=20;
         }else if(color='R'){
           azul=0;
           rojo=50;
