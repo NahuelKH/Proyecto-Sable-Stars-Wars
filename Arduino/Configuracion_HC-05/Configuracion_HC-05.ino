@@ -53,9 +53,12 @@ void loop()
    //sI reciben datos del HC05 
     if (BTserial.available())
     { 
+      Serial.println("entramos");
         //se los lee y se los muestra en el monitor serie
         c = BTserial.read();
+        Serial.println("leimos");
         Serial.write(c);
+        Serial.println("escribimos");
     }
 
     //Si se ingresa datos por teclado en el monitor serie 

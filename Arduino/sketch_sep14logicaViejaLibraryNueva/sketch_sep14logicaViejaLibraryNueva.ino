@@ -18,7 +18,7 @@ double normal;
 double normal2;
 int contadorDeTurno=0;
 int rojo=0;
-int azul=1; 
+int azul=0; 
 char estado='x';
 char color='A';
 
@@ -52,7 +52,7 @@ int attack = 0;
 int nonAttack = 0;
 int semAttack = 0;
 int luz=0;
-boolean encendido=true;
+boolean encendido=false;
 /**
   Método que inicializa/configura el arduino.
 */
@@ -104,26 +104,15 @@ void setup() {
   Método en el que se programa la funcionalidad
 */
 void loop() {
- 
-    analogWrite(PIN_COLOR_AZUL,azul);
-    analogWrite(PIN_COLOR_ROJO,rojo);
-    
-    analogWrite(PIN_VIBRADOR_DIGITAL,0);
-  /*  tmrpcm.play("on.wav");
-    while(tmrpcm.isPlaying()){ 
-      analogWrite(PIN_VIBRADOR_DIGITAL,255);
-    }*/
-/*
-    tmrpcm.play("on.wav");
-    while(tmrpcm.isPlaying()){ 
-      analogWrite(PIN_VIBRADOR_DIGITAL,255);
-    }*/
-    sensarMovimiento();
-          sensar();
+   analogWrite(PIN_VIBRADOR_DIGITAL,0);
    encendido = reedEncendido();
+   Serial.println("****************************");
+   Serial.println(encendido);
+   Serial.println("****************************");
+   Serial.println("****************************");
   if(encendido){
-    azul=0;
-    rojo=1;
+    azul=255;
+    rojo=255;
     setearColor(azul,rojo); 
     tmrpcm.play("on.wav");
     while(tmrpcm.isPlaying()){ 
@@ -133,6 +122,9 @@ void loop() {
     while(encendido){
           sensarMovimiento();
           sensar();
+      Serial.println("****************************");
+      Serial.println(encendido);
+      Serial.println("****************************");
           if(!tmrpcm.isPlaying()){
              tmrpcm.play("quieto.wav");
           }    
@@ -169,63 +161,60 @@ boolean reedEncendido(){
  */
 void sensarLuz(){
     luz=analogRead(PIN_SENSOR_LDR_ANALOGICO);
-    //Serial.print("Luz: ");
-    //Serial.println(luz);
     if(luz>220){
         if(azul>0){
-          //azul=255;
+          azul=255;
         }
         if(rojo>0){
-          //rojo=255;
+          rojo=255;
         }
-        setearColor(azul,rojo);
     }else{
         if(azul>0){
-          //azul=50;
+          azul=50;
         }
         if(rojo>0){
-          //rojo=50;
+          rojo=50;
         }
-        setearColor(azul,rojo);
     }
+     setearColor(azul,rojo);
 }
  /*
  * obtiene el valor sensado por el acelerometro
  */
 void sensarMovimiento(){
-	mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
-	if(DEBUGG_MODE){
-		Serial.print(ax);
-		Serial.print(" ");
-		Serial.print(ay);
-		Serial.print(" ");
-		Serial.print(az);
-		Serial.print(" ");
+  mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+  if(DEBUGG_MODE){
+    Serial.print(ax);
+    Serial.print(" ");
+    Serial.print(ay);
+    Serial.print(" ");
+    Serial.print(az);
+    Serial.print(" ");
 
-		Serial.print(gx);
-		Serial.print(" ");
-		Serial.print(gy);
-		Serial.print(" ");
-		Serial.print(gz);
-		Serial.println();
-	}
-	
-	//calculo la normal de las aceleraciones
-	//aca utilizo un contador para poder guardar el valor del sensado en 2 variables diferentes y asi poder hacer las comparaciones
-	if(contadorDeTurno%2==0){
-		normal=sqrt(pow(ax,2)+pow(ay,2)+pow(az,2));
-	}else{
-		normal2=sqrt(pow(ax,2)+pow(ay,2)+pow(az,2));  
-	}
-	contadorDeTurno++;
-	//reseteo el contador para que no se vaya a la mierda
-	if(contadorDeTurno==99){
-		contadorDeTurno=0;
+    Serial.print(gx);
+    Serial.print(" ");
+    Serial.print(gy);
+    Serial.print(" ");
+    Serial.print(gz);
+    Serial.println();
+  }
+  
+  //calculo la normal de las aceleraciones
+  //aca utilizo un contador para poder guardar el valor del sensado en 2 variables diferentes y asi poder hacer las comparaciones
+  if(contadorDeTurno%2==0){
+    normal=sqrt(pow(ax,2)+pow(ay,2)+pow(az,2));
+  }else{
+    normal2=sqrt(pow(ax,2)+pow(ay,2)+pow(az,2));  
+  }
+  contadorDeTurno++;
+  //reseteo el contador para que no se vaya a la mierda
+  if(contadorDeTurno==99){
+    contadorDeTurno=0;
     }
-	
-	//para mi hay que usar una logica de contadores(en tiempo) como dijo el profe
-	if(hayMovimiento(abs(normal-normal2))){
-	  
+  
+  //para mi hay que usar una logica de contadores(en tiempo) como dijo el profe
+  if(hayMovimiento(abs(normal-normal2))){
+    
     tmrpcm.play("swing.wav");
     while(!tmrpcm.isPlaying()){
       analogWrite(PIN_VIBRADOR_DIGITAL,255);
@@ -235,9 +224,9 @@ void sensarMovimiento(){
     Serial.println("hay movimiento");
     
     tmrpcm.play("quieto.wav");
-	}else{
-	  //Serial.println("*******************************************************neutro");
-	}
+  }else{
+    //Serial.println("*******************************************************neutro");
+  }
 } 
 
 /*
@@ -257,7 +246,7 @@ bool hayMovimiento(double movimiento) {
  * obtiene el valor enviado por bluetooth
  */
 void leerBluetooth(){
-  //Serial.println("leyendo BT");
+  Serial.println("leyendo BT");
   if(BTserial.available()>0){
     estado=(char)BTserial.read();
     Serial.println(estado);
