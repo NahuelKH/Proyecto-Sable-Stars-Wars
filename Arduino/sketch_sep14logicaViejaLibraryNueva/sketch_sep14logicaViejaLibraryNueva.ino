@@ -125,9 +125,10 @@ void loop() {
       Serial.println("****************************");
       Serial.println(encendido);
       Serial.println("****************************");
-          if(!tmrpcm.isPlaying()){
-             tmrpcm.play("quieto.wav");
-          }    
+        if(!tmrpcm.isPlaying()){
+			 sensarMovimiento();
+				sensar();	
+        }    
      }
     tmrpcm.play("off.wav");
     
