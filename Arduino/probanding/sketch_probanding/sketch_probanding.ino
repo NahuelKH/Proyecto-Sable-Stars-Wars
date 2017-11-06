@@ -2,23 +2,21 @@
 #include <I2Cdev.h>
 #include <MPU6050.h>
 #include <SoftwareSerial.h>
-#include <SD.h>
-#include <TMRpcm.h>
+#include <SimpleSDAudio.h>
 
 #define DEBUGG_MODE 0
 
 MPU6050 mpu;
 
-TMRpcm tmrpcm;
+//TMRpcm tmrpcm;
 SoftwareSerial BTserial(3,7); // RX | TX
 
 int16_t ax, ay, az;
-int16_t gx, gy, gz;
 double normal;
-double normal2;
-int contadorDeTurno=0;
 int rojo=0;
 int azul=0; 
+char estado='x';
+char color='A';
 
 
 //Constantes para pines de sensores
@@ -28,18 +26,20 @@ int azul=0;
 #define PIN_REED_DIGITAL 8
 
 //Constantes para pines de Actuadores
+#define PIN_CS_TARJETA_SD_DIGITAL 4
 #define PIN_VIBRADOR_DIGITAL 10
-#define PIN_COLOR_AZUL 6
-#define PIN_COLOR_ROJO 5
+#define PIN_COLOR_AZUL 5
+#define PIN_COLOR_ROJO 6
 
-// Supuestamente se necesita esto para haer andar el LED RGB Anodo
-#define COMMON_ANODE
+#define SD_ChipSelectPin 4
 
 #define DEFAULT_COLOR 0
 #define SD_ChipSelectPin 4
 //umbrales
 #define UMBRAL_ACELEROMETRO 25000
-
+#define UMBRAL_LUZ_AMBIENTAL 100
+#define UMBRAL_LUZ_BRILLO 120
+#define UMBRAL_LUZ_OSCURIDAD 90
 //contadores de sonido
 int luz=0;
 boolean encendido=false;
@@ -48,7 +48,7 @@ boolean encendido=false;
 */
 void setup() {
   // Seteo de pines ANALOGICOS
-  pinMode(PIN_SENSOR_LDR_ANALOGICO, INPUT);
+  //pinMode(PIN_SENSOR_LDR_ANALOGICO, INPUT);
   Wire.begin();
   Serial.begin(9600);
   // Seteo de pines DIGITALES
@@ -64,13 +64,12 @@ void setup() {
   //fin
 
   //configuracion sonido
-   tmrpcm.speakerPin = 9;
-   if (!SD.begin(SD_ChipSelectPin)) {  // see if the card is present and can be initialized:
-    Serial.println("SD fail");  
-    return;   // don't do anything more if not
-  }else{
+    if (SdPlay.init(SSDA_MODE_FULLRATE | SSDA_MODE_MONO | SSDA_MODE_AUTOWORKER)){
     Serial.println("todo okkkkkkkkkk");
-   }
+  }else{
+     Serial.println("SD fail");  
+  }
+
    
   //configuracion mpu
   mpu.initialize();
@@ -87,6 +86,7 @@ void setup() {
 
    BTserial.begin(9600); 
 //delay(5000);
+
   Serial.print("ready");
 }
 
@@ -96,33 +96,28 @@ void setup() {
 void loop() {
    analogWrite(PIN_VIBRADOR_DIGITAL,0);
    encendido = reedEncendido();
-   Serial.println("****************************");
-   Serial.println(encendido);
-   Serial.println("****************************");
-   Serial.println("****************************");
+    sensarMovimiento();
+      //SdPlay.setFile("on.wav"); 
+  //SdPlay.play();
+ while(!SdPlay.isStopped()) {Serial.println("jojojo");}
   if(encendido){
-    azul=255;
+    azul=0;
     rojo=255;
     setearColor(azul,rojo); 
-    tmrpcm.play("on.wav");
+   /* tmrpcm.play("on.wav");
     while(tmrpcm.isPlaying()){ 
       analogWrite(PIN_VIBRADOR_DIGITAL,255);
-    }
+    }*/
     analogWrite(PIN_VIBRADOR_DIGITAL,0);
     while(encendido){
-        leerBluetooth(); 
-        sensarMovimiento();
-        sensar();
-      Serial.println(encendido);
-        if(!tmrpcm.isPlaying()){
-          tmrpcm.play("quieto.wav");
-        }    
+          sensarMovimiento();
+          sensar();
      }
-    tmrpcm.play("off.wav");
+   /* tmrpcm.play("off.wav");
     
     while(tmrpcm.isPlaying()){
         analogWrite(PIN_VIBRADOR_DIGITAL,255);
-    }
+    }*/
     azul=0;
     rojo=0;
     setearColor(azul,rojo);
@@ -171,92 +166,92 @@ void sensarLuz(){
  * obtiene el valor sensado por el acelerometro
  */
 void sensarMovimiento(){
- mpu.getAcceleration(&ax, &ay, &az);
+  //mpu.getMotion6(&ax, &ay, &az, &gx, &gy, &gz);
+  mpu.getAcceleration(&ax, &ay, &az);
 
   normal=sqrt(pow(ax,2)+pow(ay,2)+pow(az,2));
   if(normal>UMBRAL_ACELEROMETRO){
     Serial.println(normal);
-    
-    tmrpcm.play("swing.wav");
-    while(tmrpcm.isPlaying()){
-     // analogWrite(PIN_VIBRADOR_DIGITAL,255);
-     Serial.println("reproduciendo sonido movimiento");
-      sensar();
-      leerBluetooth(); 
+    //tmrpcm.play("on.wav");  
+if(SdPlay.setFile("on.wav")){
+    Serial.println("encontrado");
+  }else{
+    Serial.println("fail");
     }
-    analogWrite(PIN_VIBRADOR_DIGITAL,0);   
-    tmrpcm.play("quieto.wav");
+  SdPlay.play();
+ while(!SdPlay.isStopped()) {
+   Serial.println("que hace");
+ }  
   }
 } 
 
-/*
-   método que indicará si el sable de luz produjo un movimiento.
-   @author: Pablo
-*/
-//detecta movimiento segun el umbral
-bool hayMovimiento(double movimiento) {
-  bool flagMovimiento = 0;
-  if(movimiento>UMBRAL_ACELEROMETRO){
-    flagMovimiento = 1;
-   Serial.println("Hay movimiento");
-  }
-  return flagMovimiento;
-}
 /*
  * obtiene el valor enviado por bluetooth
  */
 void leerBluetooth(){
   Serial.println("leyendo BT");
   if(BTserial.available()>0){
-    switch((char)BTserial.read()){
+    estado=(char)BTserial.read();
+    Serial.println(estado);
+    switch(estado){
       case '0':
         Serial.println("DEBIL");
-        if(azul>0){
-          azul=1;
-        }
-        if(rojo>0){
-          rojo=1;
+        if(color=='A'){
+          azul=20;
+          rojo=0;
+        }else if(color=='R'){
+          azul=0;
+          rojo=20;
+        }else{
+          azul=20;
+          rojo=20;
         }
         setearColor(azul,rojo);
       break;
       case '1':
         Serial.println("FUERTE");
-        if(azul>0){
+       if(color=='A'){
           azul=255;
-        }
-        if(rojo>0){
+          rojo=0;
+        }else if(color=='R'){
+          azul=0;
+          rojo=255;
+        }else{
+          azul=255;
           rojo=255;
         }
         setearColor(azul,rojo);
       break;
       case '2':
          Serial.println("CHOQUE");
-         tmrpcm.play("Saberblk.wav");
+        /* tmrpcm.play("Saberblk.wav");
          while(tmrpcm.isPlaying()){
-          sensar();
-         }
+      sensar();
+         }*/
          break;
        case '3':
          Serial.println("ACELERACION");
-         tmrpcm.play("swing.wav");
+        /* tmrpcm.play("swing.wav");
          while(tmrpcm.isPlaying()){
           sensar();
-         }
+         }*/
          break;
         case 'A':
          azul=255;
          rojo=0;
-   
+         color='A';
          setearColor(azul,rojo);
         break;
         case 'R':
          azul=0;
          rojo=255;
+         color='R';
          setearColor(azul,rojo);
         break;
         case 'V':
          azul=255;
          rojo=255;
+         color='V';
          setearColor(azul,rojo);
         break;
 
@@ -278,7 +273,7 @@ void setearColor(int azul, int rojo){
  * Llama a los metodos que leen los sensores y el BT.
  */
 void sensar(){
-    
+    //leerBluetooth();      
     sensarLuz();
     encendido=reedEncendido();
 }
